@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS352 – Module 2: Algorithms Analysis Methods Quiz</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b27;
+    --card: #1e2336;
+    --border: #2a3050;
+    --accent: #7c6af7;
+    --accent2: #38d9a9;
+    --text: #e4e8f0;
+    --muted: #7a85a0;
+    --correct: #38d9a9;
+    --wrong: #f06060;
+    --warn: #f5a623;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a1d2e 0%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 24px 20px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(124,106,247,.16) 0%, transparent 68%);
+    pointer-events: none;
+  }
+  .course-tag {
+    display: inline-block;
+    background: rgba(124,106,247,.15); border: 1px solid rgba(124,106,247,.38);
+    color: #b0a6ff; font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;
+  }
+  .header h1 { font-size: clamp(19px, 4vw, 30px); font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .header p { color: var(--muted); font-size: 14px; }
+
+  /* PROGRESS */
+  .progress-wrap { padding: 16px 24px 0; max-width: 820px; margin: 0 auto; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .progress-track { background: var(--border); border-radius: 8px; height: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 8px; transition: width .4s ease; width: 0%; }
+
+  /* QUIZ */
+  .quiz-body { max-width: 820px; margin: 22px auto 40px; padding: 0 16px; }
+  .section-label {
+    display: inline-flex; align-items: center;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--accent2); background: rgba(56,217,169,.09); border: 1px solid rgba(56,217,169,.24);
+    padding: 3px 11px; border-radius: 20px; margin-bottom: 12px;
+  }
+  .question-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px; margin-bottom: 20px; animation: fadeIn .33s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .q-number { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+  .q-text { font-size: 15.5px; font-weight: 600; color: var(--text); line-height: 1.55; margin-bottom: 20px; }
+  .q-text code { background: rgba(124,106,247,.14); border: 1px solid rgba(124,106,247,.28); color: #c5bbff; font-family: Consolas,monospace; font-size: 13.5px; padding: 1px 6px; border-radius: 4px; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 13px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px;
+    text-align: left; transition: border-color .18s, background .18s, transform .1s;
+    color: var(--text); font-size: 14.5px; line-height: 1.42; width: 100%;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,106,247,.09); transform: translateX(3px); }
+  .opt-letter {
+    min-width: 26px; height: 26px; background: var(--border); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0;
+    transition: background .18s, color .18s;
+  }
+  .option-btn.correct { border-color: var(--correct); background: rgba(56,217,169,.09); }
+  .option-btn.correct .opt-letter { background: var(--correct); color: #000; }
+  .option-btn.wrong { border-color: var(--wrong); background: rgba(240,96,96,.09); }
+  .option-btn.wrong .opt-letter { background: var(--wrong); color: #fff; }
+  .option-btn:disabled { cursor: default; }
+
+  .feedback {
+    margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+    font-size: 13.5px; line-height: 1.5; display: none; animation: fadeIn .22s ease;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: rgba(56,217,169,.09); border: 1px solid rgba(56,217,169,.32); color: #7affd8; }
+  .feedback.wrong-fb { background: rgba(240,96,96,.07); border: 1px solid rgba(240,96,96,.28); color: #ffaaaa; }
+  .feedback strong { color: #fff; }
+
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .btn-nav { background: none; border: 1.5px solid var(--border); color: var(--muted); padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .18s; }
+  .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-nav:disabled { opacity: .3; cursor: default; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #a99cf8); border: none; color: #fff; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; transition: opacity .18s, transform .1s; }
+  .btn-primary:hover { opacity: .9; transform: scale(1.02); }
+  .btn-primary:disabled { opacity: .4; cursor: default; transform: none; }
+
+  /* START */
+  #start-screen { display: none; text-align: center; padding: 44px 20px 60px; max-width: 600px; margin: 0 auto; }
+  #start-screen.active { display: block; }
+  #quiz-container { display: none; }
+  #quiz-container.active { display: block; }
+  .start-icon { font-size: 58px; margin-bottom: 20px; }
+  .start-title { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+  .start-sub { color: var(--muted); font-size: 15px; line-height: 1.65; margin-bottom: 28px; }
+  .start-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 32px; }
+  .chip { background: var(--card); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; padding: 5px 14px; color: var(--muted); }
+  .btn-start { background: linear-gradient(135deg, var(--accent), #a99cf8); border: none; color: #fff; padding: 14px 42px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 700; transition: opacity .18s; }
+  .btn-start:hover { opacity: .9; }
+
+  /* SCORE */
+  .score-screen { display: none; text-align: center; padding: 44px 20px 60px; max-width: 600px; margin: 0 auto; animation: fadeIn .5s ease; }
+  .score-screen.active { display: block; }
+  .score-ring { position: relative; width: 160px; height: 160px; margin: 0 auto 26px; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring-bg { fill: none; stroke: var(--border); stroke-width: 12; }
+  .score-ring-fill { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+  .ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .score-pct { font-size: 36px; font-weight: 800; color: #fff; }
+  .score-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .grade-badge { display: inline-block; font-size: 22px; font-weight: 800; padding: 6px 22px; border-radius: 30px; margin-bottom: 18px; }
+  .grade-A { background: rgba(56,217,169,.14); color: var(--correct); border: 1.5px solid rgba(56,217,169,.38); }
+  .grade-B { background: rgba(124,106,247,.14); color: #b0a6ff; border: 1.5px solid rgba(124,106,247,.38); }
+  .grade-C { background: rgba(245,166,35,.11); color: var(--warn); border: 1.5px solid rgba(245,166,35,.33); }
+  .grade-D { background: rgba(240,96,96,.09); color: var(--wrong); border: 1.5px solid rgba(240,96,96,.28); }
+  .score-headline { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+  .score-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .score-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 32px; }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 12px; }
+  .stat-val { font-size: 28px; font-weight: 800; }
+  .stat-val.green { color: var(--correct); }
+  .stat-val.red { color: var(--wrong); }
+  .stat-val.blue { color: #b0a6ff; }
+  .stat-name { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .8px; }
+  .btn-restart { background: linear-gradient(135deg, var(--accent), #a99cf8); border: none; color: #fff; padding: 14px 38px; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 700; transition: opacity .18s; }
+  .btn-restart:hover { opacity: .88; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="course-tag">DS352 · Design and Analysis of Algorithms</div>
+  <h1>Module 2: Algorithms Analysis Methods</h1>
+  <p>Saudi Electronic University &nbsp;·&nbsp; College of Computing and Informatics</p>
+</div>
+
+<div id="start-screen" class="active">
+  <div class="start-icon">📊</div>
+  <div class="start-title">Test Your Module 2 Knowledge</div>
+  <div class="start-sub">This quiz covers the analysis framework, asymptotic notations (O, Ω, Θ), worst/best/average-case efficiencies, mathematical analysis of recursive and non-recursive algorithms, and empirical analysis.</div>
+  <div class="start-chips">
+    <span class="chip">36 Questions</span>
+    <span class="chip">Randomized Order</span>
+    <span class="chip">Instant Feedback</span>
+    <span class="chip">Score Report</span>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">Start Quiz →</button>
+</div>
+
+<div class="progress-wrap" id="progress-wrap" style="display:none;">
+  <div class="progress-meta">
+    <span id="q-counter">Question 1 of 36</span>
+    <span id="score-live">Score: 0</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+</div>
+
+<div id="quiz-container">
+  <div class="quiz-body">
+    <div id="question-area"></div>
+    <div class="nav-row">
+      <button class="btn-nav" id="btn-prev" onclick="navigate(-1)" disabled>← Previous</button>
+      <button class="btn-primary" id="btn-next" onclick="navigate(1)" disabled>Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="score-screen" id="score-screen">
+  <div class="score-ring">
+    <svg width="160" height="160" viewBox="0 0 160 160">
+      <circle class="score-ring-bg" cx="80" cy="80" r="68"/>
+      <circle class="score-ring-fill" id="ring-fill" cx="80" cy="80" r="68" stroke-dasharray="427" stroke-dashoffset="427"/>
+    </svg>
+    <div class="ring-text">
+      <span class="score-pct" id="pct-text">0%</span>
+      <span class="score-lbl">Score</span>
+    </div>
+  </div>
+  <div class="grade-badge" id="grade-badge">A</div>
+  <div class="score-headline" id="score-headline">Excellent!</div>
+  <div class="score-sub" id="score-sub">You answered 0 out of 36 questions correctly.</div>
+  <div class="score-stats">
+    <div class="stat-box"><div class="stat-val green" id="s-correct">0</div><div class="stat-name">Correct</div></div>
+    <div class="stat-box"><div class="stat-val red" id="s-wrong">0</div><div class="stat-name">Wrong</div></div>
+    <div class="stat-box"><div class="stat-val blue" id="s-skipped">0</div><div class="stat-name">Skipped</div></div>
+  </div>
+  <button class="btn-restart" onclick="restartQuiz()">↺ Retake Quiz</button>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+
+  // ── ANALYSIS FRAMEWORK ──────────────────────────────────────────────
+  {
+    section: "The Analysis Framework",
+    q: "Which two main approaches to algorithm analysis are mentioned in the slides?",
+    options: [
+      "Empirical analysis and theoretical analysis",
+      "Worst-case analysis and best-case analysis",
+      "Static analysis and dynamic analysis",
+      "Space analysis and time analysis"
+    ],
+    answer: 0,
+    explain: "The two approaches are <strong>empirical analysis</strong> (less useful) and <strong>theoretical analysis</strong> (most important)."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "Which four issues are identified when analysing algorithms in the slides?",
+    options: [
+      "Speed, memory, portability, and scalability",
+      "Correctness, time efficiency, space efficiency, and optimality",
+      "Input size, output size, loops, and recursion depth",
+      "Sorting, searching, hashing, and traversal"
+    ],
+    answer: 1,
+    explain: "The four issues are: <strong>correctness, time efficiency, space efficiency, and optimality</strong>."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "Time complexity (time efficiency) indicates:",
+    options: [
+      "How much extra memory the algorithm requires",
+      "How fast the algorithm runs",
+      "The number of input elements the algorithm processes",
+      "The number of output elements the algorithm produces"
+    ],
+    answer: 1,
+    explain: "<strong>Time efficiency (time complexity)</strong> indicates how fast the algorithm runs."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "Space complexity (space efficiency) indicates:",
+    options: [
+      "How fast the algorithm runs on a given processor",
+      "The number of basic operations the algorithm performs",
+      "The amount of memory units required by the algorithm plus its input and output",
+      "The depth of recursion the algorithm uses"
+    ],
+    answer: 2,
+    explain: "<strong>Space efficiency (space complexity)</strong> indicates the amount of memory units required by the algorithm as well as the space needed for its input and output."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "According to the analysis framework, what is the 'basic operation' of an algorithm?",
+    options: [
+      "The first statement executed when the algorithm starts",
+      "The operation that contributes most towards the running time of the algorithm",
+      "Any arithmetic operation found inside a loop",
+      "The operation that uses the most memory in the algorithm"
+    ],
+    answer: 1,
+    explain: "The <strong>basic operation</strong> is the operation that contributes most towards the running time of the algorithm."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "The formula T(n) ≈ c_op × C(n) represents the running time, where C(n) is:",
+    options: [
+      "The execution time for each basic operation",
+      "The total number of times the basic operation is executed",
+      "The size of the input in bytes",
+      "The number of recursive calls made"
+    ],
+    answer: 1,
+    explain: "In T(n) ≈ c_op × C(n): c_op is the execution time for the basic operation, and <strong>C(n) is the number of times the basic operation is executed</strong>."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "Which of the following is listed as a drawback of measuring running time using standard time units (seconds, milliseconds)?",
+    options: [
+      "Time units cannot be applied to recursive algorithms",
+      "Time units depend on the speed of a particular computer, program quality, and compiler",
+      "Time units always overestimate the true running time",
+      "Time units can only be used for sorting algorithms"
+    ],
+    answer: 1,
+    explain: "Drawbacks include dependence on the <strong>speed of a particular computer, quality of the program, compiler used</strong>, and difficulty of clocking actual running time."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "For the problem of searching for a key in a list of n items, what is the basic operation?",
+    options: [
+      "Swapping two elements",
+      "Assigning the key to a variable",
+      "Key comparison",
+      "Incrementing the loop counter"
+    ],
+    answer: 2,
+    explain: "For searching, the basic operation is a <strong>key comparison</strong>."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "For matrix multiplication of two matrices, what is identified as the basic operation?",
+    options: [
+      "Addition of two matrix elements",
+      "Multiplication of two numbers",
+      "Comparison of two matrix elements",
+      "Reading an element from the matrix"
+    ],
+    answer: 1,
+    explain: "For matrix multiplication, the basic operation is the <strong>multiplication of two numbers</strong>."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "For checking the primality of an integer n, what is the input size measure according to the slides?",
+    options: [
+      "The value of n itself",
+      "The number of digits in n (in binary representation)",
+      "The square root of n",
+      "The number of prime factors of n"
+    ],
+    answer: 1,
+    explain: "For primality checking, the input size is <strong>the number of digits (in binary representation)</strong>, not the value of n itself."
+  },
+  {
+    section: "The Analysis Framework",
+    q: "According to the Orders of Growth concept, what primarily distinguishes efficient algorithms from inefficient ones?",
+    options: [
+      "Performance differences on small inputs",
+      "The number of lines of code in the implementation",
+      "The function's order of growth for large values of n",
+      "The choice of programming language"
+    ],
+    answer: 2,
+    explain: "For large values of n, it is the <strong>function's order of growth</strong> that counts — differences on small inputs do not clearly reveal efficiency gaps."
+  },
+
+  // ── WORST / BEST / AVERAGE CASE ──────────────────────────────────────
+  {
+    section: "Worst-Case, Best-Case, and Average-Case Efficiencies",
+    q: "In the Sequential Search algorithm, what constitutes the worst case?",
+    options: [
+      "The key is found at the very first position in the array",
+      "The key is not present in the array, or the matching element is at the last position",
+      "The array is already sorted in ascending order",
+      "The key appears multiple times in the array"
+    ],
+    answer: 1,
+    explain: "The worst case for Sequential Search is when <strong>there is no matching element, or the first match is at the last position</strong>."
+  },
+  {
+    section: "Worst-Case, Best-Case, and Average-Case Efficiencies",
+    q: "In the Sequential Search algorithm, what constitutes the best case?",
+    options: [
+      "The key is not found in the array after checking all elements",
+      "The key is found at the very first position in the array",
+      "The key is found at the middle position of the array",
+      "The array has exactly one element"
+    ],
+    answer: 1,
+    explain: "The best case for Sequential Search is when <strong>the matching element is found at the first position</strong>."
+  },
+  {
+    section: "Worst-Case, Best-Case, and Average-Case Efficiencies",
+    q: "Why must we sometimes distinguish between worst-case, average-case, and best-case efficiencies?",
+    options: [
+      "Because different notations (O, Ω, Θ) require different cases to be defined",
+      "Because the efficiencies of some algorithms differ significantly for inputs of the same size",
+      "Because the programming language affects each case differently",
+      "Because recursive algorithms always require all three cases"
+    ],
+    answer: 1,
+    explain: "We distinguish cases because <strong>the efficiencies of some algorithms can differ significantly for inputs of the same size</strong>."
+  },
+  {
+    section: "Worst-Case, Best-Case, and Average-Case Efficiencies",
+    q: "According to the key points of the analysis framework, what is the primary interest of the framework?",
+    options: [
+      "Counting the exact number of memory accesses for each algorithm",
+      "The order of growth of running time (or memory) as input size goes to infinity",
+      "Minimizing the number of lines of code in the implementation",
+      "Finding the best-case running time for all algorithms"
+    ],
+    answer: 1,
+    explain: "The framework's primary interest lies in the <strong>order of growth of the algorithm's running time as its input size goes to infinity</strong>."
+  },
+  {
+    section: "Worst-Case, Best-Case, and Average-Case Efficiencies",
+    q: "How is time efficiency measured according to the analysis framework's key points?",
+    options: [
+      "By measuring wall-clock time in milliseconds",
+      "By counting the number of times the algorithm's basic operation is executed",
+      "By counting the total number of statements in the algorithm",
+      "By measuring CPU cycles consumed on a reference machine"
+    ],
+    answer: 1,
+    explain: "Time efficiency is measured by <strong>counting the number of times the basic operation is executed</strong>."
+  },
+  {
+    section: "Worst-Case, Best-Case, and Average-Case Efficiencies",
+    q: "How is space efficiency measured according to the analysis framework's key points?",
+    options: [
+      "By measuring the size of the source code file",
+      "By counting the number of variables declared",
+      "By counting the number of extra memory units consumed by the algorithm",
+      "By measuring peak RAM usage during execution"
+    ],
+    answer: 2,
+    explain: "Space efficiency is measured by <strong>counting the number of extra memory units consumed</strong> by the algorithm."
+  },
+
+  // ── ASYMPTOTIC NOTATION ──────────────────────────────────────────────
+  {
+    section: "Asymptotic Notations",
+    q: "What is the purpose of asymptotic notation?",
+    options: [
+      "To measure exact execution time in nanoseconds",
+      "To make meaningful statements about the efficiency of a program based on order of growth",
+      "To describe the memory layout of data structures",
+      "To count the exact number of machine instructions executed"
+    ],
+    answer: 1,
+    explain: "Asymptotic notation is used to <strong>make meaningful statements about the efficiency of a program</strong>, focusing on the order of growth."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "How many asymptotic notations are introduced in the slides, and what are they?",
+    options: [
+      "Two: O (Big-Oh) and Ω (Big-Omega)",
+      "Four: O, Ω, Θ, and o (little-oh)",
+      "Three: O (Big-Oh), Ω (Big-Omega), and Θ (Big-Theta)",
+      "Two: Θ (Big-Theta) and o (little-oh)"
+    ],
+    answer: 2,
+    explain: "Three notations are introduced: <strong>O (Big-Oh), Ω (Big-Omega), and Θ (Big-Theta)</strong>."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "Big-O notation (O) is best described as:",
+    options: [
+      "An asymptotic lower bound — the algorithm runs at least this fast",
+      "An exact tight bound — the algorithm runs exactly at this rate",
+      "An asymptotic upper bound — useful for worst-case analysis",
+      "A measure of average-case performance only"
+    ],
+    answer: 2,
+    explain: "Big-O is the <strong>asymptotic upper bound</strong> — it is useful for <strong>worst-case analysis</strong> and is described as a loose bound."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "The formal definition of O-notation states that t(n) ∈ O(g(n)) if:",
+    options: [
+      "t(n) ≥ c·g(n) for all n ≥ n₀, for some positive constant c and n₀",
+      "t(n) ≤ c·g(n) for all n ≥ n₀, for some positive constant c and n₀",
+      "t(n) = c·g(n) for all n ≥ n₀, for some positive constant c and n₀",
+      "t(n) ≤ g(n) for all n, with no constant multiplier needed"
+    ],
+    answer: 1,
+    explain: "t(n) ∈ O(g(n)) means <strong>t(n) ≤ c·g(n) for all n ≥ n₀</strong>, for some positive constants c and n₀."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "Which of the following statements about Big-O is given as an example in the slides?",
+    options: [
+      "100n + 5 ∈ O(n) only, not O(n²)",
+      "100n + 5 ∈ O(n²) and n ∈ O(n²)",
+      "n² ∈ O(n) for all sufficiently large n",
+      "100n + 5 ∈ O(log n)"
+    ],
+    answer: 1,
+    explain: "The slides explicitly state: <strong>100n + 5 ∈ O(n²)</strong> and <strong>n ∈ O(n²)</strong> as examples."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "Big-Omega notation (Ω) represents:",
+    options: [
+      "An asymptotic upper bound on the algorithm's running time",
+      "An asymptotic lower bound on the algorithm's running time",
+      "The exact tight bound — neither upper nor lower",
+      "The average-case running time of the algorithm"
+    ],
+    answer: 1,
+    explain: "Big-Omega (Ω) is the <strong>asymptotic lower bound</strong> on the algorithm's running time."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "Big-Theta notation (Θ) represents:",
+    options: [
+      "A loose upper bound — the algorithm can be faster",
+      "A loose lower bound — the algorithm can be slower",
+      "A tight bound — the algorithm's running time is sandwiched between two constant multiples of g(n)",
+      "The worst-case running time expressed as an exact formula"
+    ],
+    answer: 2,
+    explain: "Big-Theta (Θ) is a <strong>tight bound</strong> — the running time is bounded both above and below by constant multiples of g(n) for large n."
+  },
+  {
+    section: "Asymptotic Notations",
+    q: "Which asymptotic notation is primarily used for best-case analysis?",
+    options: [
+      "O (Big-Oh) — the upper bound notation",
+      "Θ (Big-Theta) — the tight bound notation",
+      "Ω (Big-Omega) — the lower bound notation",
+      "All three notations are equally used for best-case analysis"
+    ],
+    answer: 2,
+    explain: "<strong>Ω (Big-Omega)</strong> provides a lower bound and is associated with best-case analysis, whereas O is used for worst-case."
+  },
+
+  // ── RECURSIVE ALGORITHM ANALYSIS ────────────────────────────────────
+  {
+    section: "Mathematical Analysis of Recursive Algorithms",
+    q: "What is the FIRST step in the general plan for analysing the time efficiency of recursive algorithms?",
+    options: [
+      "Identify the algorithm's basic operation",
+      "Decide on a parameter indicating the input's size",
+      "Set up a recurrence relation with an initial condition",
+      "Solve the recurrence relation"
+    ],
+    answer: 1,
+    explain: "Step 1 is to <strong>decide on a parameter indicating the input's size</strong>."
+  },
+  {
+    section: "Mathematical Analysis of Recursive Algorithms",
+    q: "In the recursive factorial algorithm F(n) = F(n−1) × n, what is identified as the basic operation?",
+    options: [
+      "Comparison (checking if n > 0)",
+      "Subtraction (computing n−1)",
+      "Multiplication",
+      "Addition"
+    ],
+    answer: 2,
+    explain: "The basic operation of the recursive factorial algorithm is <strong>multiplication</strong> — F(n) = F(n−1) × n."
+  },
+  {
+    section: "Mathematical Analysis of Recursive Algorithms",
+    q: "For the recursive factorial algorithm, the recurrence relation for the number of multiplications M(n) is:",
+    options: [
+      "M(n) = M(n−1) + n, with M(0) = 0",
+      "M(n) = 2·M(n/2) + 1",
+      "M(n) = M(n−1) + 1, with M(0) = 0",
+      "M(n) = M(n−1) × n, with M(1) = 1"
+    ],
+    answer: 2,
+    explain: "M(n) = M(n−1) + 1 because <strong>one multiplication is added</strong> to the M(n−1) multiplications needed for F(n−1). Initial condition M(0) = 0."
+  },
+  {
+    section: "Mathematical Analysis of Recursive Algorithms",
+    q: "What technique is used to solve recurrence relations, as demonstrated in the slides?",
+    options: [
+      "Master theorem only",
+      "Method of backward substitution",
+      "Dynamic programming table filling",
+      "Generating functions"
+    ],
+    answer: 1,
+    explain: "The slides demonstrate the <strong>method of backward substitution</strong> to solve recurrence relations."
+  },
+  {
+    section: "Mathematical Analysis of Recursive Algorithms",
+    q: "In the general plan for recursive algorithm analysis, what must be investigated if the basic operation count varies for inputs of the same size?",
+    options: [
+      "Only the average-case efficiency",
+      "Only the worst-case efficiency",
+      "Worst-case, average-case, and best-case efficiencies separately",
+      "The space complexity instead of time complexity"
+    ],
+    answer: 2,
+    explain: "If the count varies for same-size inputs, <strong>worst-case, average-case, and best-case efficiencies must be investigated separately</strong>."
+  },
+  {
+    section: "Mathematical Analysis of Recursive Algorithms",
+    q: "What is the final step in the general plan for analysing recursive algorithms?",
+    options: [
+      "Identify the algorithm's basic operation",
+      "Set up a recurrence relation with an initial condition",
+      "Decide on the input size parameter",
+      "Solve the recurrence or ascertain the order of growth of its solution"
+    ],
+    answer: 3,
+    explain: "The final step (Step 5) is to <strong>solve the recurrence or at least ascertain the order of growth of its solution</strong>."
+  },
+
+  // ── NON-RECURSIVE ALGORITHM ANALYSIS ────────────────────────────────
+  {
+    section: "Mathematical Analysis of Non-Recursive Algorithms",
+    q: "In the general plan for analysing non-recursive algorithms, where should the basic operation be found?",
+    options: [
+      "In the function's header (signature)",
+      "In the outermost loop of the algorithm",
+      "In the innermost loop of the algorithm",
+      "In any conditional (if/else) branch"
+    ],
+    answer: 2,
+    explain: "For non-recursive algorithms, the basic operation is identified in the <strong>innermost loop</strong>."
+  },
+  {
+    section: "Mathematical Analysis of Non-Recursive Algorithms",
+    q: "In the find-maximum algorithm analysis (Example 1), what is identified as the basic operation and why?",
+    options: [
+      "The assignment maxval ← A[i], because it updates the maximum value",
+      "The loop increment, because it repeats n−1 times",
+      "The comparison A[i] > maxval, because it executes on every loop repetition",
+      "Reading the first element, because it initializes the algorithm"
+    ],
+    answer: 2,
+    explain: "The <strong>comparison A[i] > maxval</strong> is the basic operation because it is <strong>executed on each repetition of the loop</strong>, unlike the assignment which is conditional."
+  },
+  {
+    section: "Mathematical Analysis of Non-Recursive Algorithms",
+    q: "In the find-maximum algorithm, does the number of comparisons vary between different arrays of the same size n?",
+    options: [
+      "Yes — it varies depending on whether the maximum is near the start or end",
+      "Yes — it varies depending on whether the array is sorted or unsorted",
+      "No — the number of comparisons is the same for all arrays of size n",
+      "No — but only for sorted arrays; unsorted arrays differ"
+    ],
+    answer: 2,
+    explain: "The number of comparisons is <strong>the same for all arrays of size n</strong> — there is no need to distinguish worst, average, or best cases."
+  },
+  {
+    section: "Mathematical Analysis of Non-Recursive Algorithms",
+    q: "For the UniqueElements algorithm (Example 2), why is only the worst-case efficiency investigated?",
+    options: [
+      "Because the algorithm always performs the same number of comparisons",
+      "Because the number of comparisons depends not only on n but also on whether equal elements exist and their positions",
+      "Because the best case is trivially O(1) and uninteresting",
+      "Because the average case requires probability theory beyond the scope of the course"
+    ],
+    answer: 1,
+    explain: "The count depends <strong>on n and also on whether equal elements exist and their positions</strong>, so the worst case is the most informative bound to investigate."
+  },
+  {
+    section: "Mathematical Analysis of Non-Recursive Algorithms",
+    q: "In the general plan for non-recursive algorithm analysis, what is set up to express the number of basic operation executions?",
+    options: [
+      "A recurrence relation with an initial condition",
+      "A sum (summation) expressing the count",
+      "A probability distribution over all inputs",
+      "A system of differential equations"
+    ],
+    answer: 1,
+    explain: "For non-recursive algorithms, a <strong>sum (summation)</strong> is set up to express the number of times the basic operation executes."
+  },
+  {
+    section: "Mathematical Analysis of Non-Recursive Algorithms",
+    q: "What is the final step in the general plan for non-recursive algorithm analysis?",
+    options: [
+      "Set up a recurrence relation",
+      "Identify the basic operation in the innermost loop",
+      "Use standard formulas and sum manipulation to find a closed-form formula or establish order of growth",
+      "Decide on the input size parameter"
+    ],
+    answer: 2,
+    explain: "Step 5 is to <strong>use standard formulas and rules of sum manipulation to find a closed-form formula or at least establish its order of growth</strong>."
+  },
+
+  // ── EMPIRICAL ANALYSIS ───────────────────────────────────────────────
+  {
+    section: "Empirical Analysis of Algorithms",
+    q: "When is empirical analysis particularly useful?",
+    options: [
+      "When the algorithm has no loops or recursion",
+      "When the mathematical analysis is difficult or intractable",
+      "When the algorithm is already known to be O(n log n)",
+      "When the input size is always very small (n < 10)"
+    ],
+    answer: 1,
+    explain: "Empirical analysis is the principal alternative to mathematical analysis and is useful especially <strong>when the mathematical analysis is difficult</strong>."
+  },
+  {
+    section: "Empirical Analysis of Algorithms",
+    q: "How many steps are listed in the general plan for empirical analysis of algorithm efficiency?",
+    options: [
+      "Four steps",
+      "Five steps",
+      "Six steps",
+      "Seven steps"
+    ],
+    answer: 3,
+    explain: "The general plan for empirical analysis consists of <strong>seven steps</strong>, from understanding the experiment's purpose to analysing the data obtained."
+  },
+  {
+    section: "Empirical Analysis of Algorithms",
+    q: "Which of the following is the FIRST step in the general plan for empirical analysis?",
+    options: [
+      "Generate a sample of inputs",
+      "Prepare a program implementing the algorithm",
+      "Understand the experiment's purpose",
+      "Decide on the efficiency metric M to be measured"
+    ],
+    answer: 2,
+    explain: "The first step is to <strong>understand the experiment's purpose</strong>."
+  },
+  {
+    section: "Empirical Analysis of Algorithms",
+    q: "In empirical analysis, what does the efficiency metric M represent?",
+    options: [
+      "The asymptotic notation class of the algorithm",
+      "The operation count or time unit used to measure efficiency",
+      "The maximum number of recursive calls allowed",
+      "The minimum input size required for the algorithm to work"
+    ],
+    answer: 1,
+    explain: "The efficiency metric M is the <strong>operation count or time unit</strong> chosen to measure efficiency."
+  },
+  {
+    section: "Empirical Analysis of Algorithms",
+    q: "According to the summary, how is empirical analysis of an algorithm performed?",
+    options: [
+      "By solving recurrence relations for all input sizes",
+      "By applying asymptotic notation to the algorithm's pseudocode",
+      "By running a program implementing the algorithm on a sample of inputs and analysing the observed data",
+      "By comparing the algorithm's theoretical O-notation with its measured Θ-notation"
+    ],
+    answer: 2,
+    explain: "Empirical analysis is performed by <strong>running a program on a sample of inputs and analysing the data observed</strong> (basic operation count or physical running time)."
+  }
+];
+
+let questions = [], current = 0, answers = {}, score = 0;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  questions = shuffle([...ALL_QUESTIONS]).map(q => {
+    const indexed = q.options.map((o, i) => ({ text: o, orig: i }));
+    shuffle(indexed);
+    const newAnswer = indexed.findIndex(x => x.orig === q.answer);
+    return { ...q, options: indexed.map(x => x.text), answer: newAnswer };
+  });
+  current = 0; answers = {}; score = 0;
+  document.getElementById('start-screen').classList.remove('active');
+  document.getElementById('progress-wrap').style.display = 'block';
+  document.getElementById('quiz-container').classList.add('active');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  const total = questions.length;
+  document.getElementById('q-counter').textContent = `Question ${current + 1} of ${total}`;
+  document.getElementById('score-live').textContent = `Score: ${score}`;
+  document.getElementById('prog-fill').style.width = `${(current / total) * 100}%`;
+  document.getElementById('btn-prev').disabled = current === 0;
+  const isLast = current === total - 1;
+  const answered = answers[current] !== undefined;
+  const nb = document.getElementById('btn-next');
+  nb.disabled = !answered;
+  nb.textContent = isLast ? 'Finish Quiz ✓' : 'Next →';
+
+  const L = ['A','B','C','D'];
+  const sel = answers[current];
+  const locked = sel !== undefined;
+
+  document.getElementById('question-area').innerHTML = `
+    <div class="question-card">
+      <div class="section-label">${q.section}</div>
+      <div class="q-number">Question ${current + 1} / ${total}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${q.options.map((opt, i) => {
+          let cls = '';
+          if (locked) {
+            if (i === q.answer) cls = 'correct';
+            else if (i === sel && sel !== q.answer) cls = 'wrong';
+          }
+          return `<button class="option-btn ${cls}" ${locked?'disabled':''} onclick="selectAnswer(${i})">
+            <span class="opt-letter">${L[i]}</span><span>${opt}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      ${locked ? `<div class="feedback ${sel===q.answer?'correct-fb':'wrong-fb'} show">
+        ${sel===q.answer
+          ? `✅ <strong>Correct!</strong> ${q.explain}`
+          : `❌ <strong>Incorrect.</strong> Correct answer: <strong>${L[q.answer]}</strong>. ${q.explain}`}
+      </div>` : ''}
+    </div>`;
+}
+
+function selectAnswer(idx) {
+  if (answers[current] !== undefined) return;
+  answers[current] = idx;
+  if (idx === questions[current].answer) score++;
+  document.getElementById('score-live').textContent = `Score: ${score}`;
+  document.getElementById('btn-next').disabled = false;
+  renderQuestion();
+}
+
+function navigate(dir) {
+  if (dir === 1 && current === questions.length - 1) { showScore(); return; }
+  current = Math.max(0, Math.min(questions.length - 1, current + dir));
+  renderQuestion();
+}
+
+function showScore() {
+  document.getElementById('quiz-container').classList.remove('active');
+  document.getElementById('progress-wrap').style.display = 'none';
+  const total = questions.length, correct = score;
+  const wrong = Object.keys(answers).filter(i => answers[i] !== questions[i].answer).length;
+  const skipped = total - Object.keys(answers).length;
+  const pct = Math.round((correct / total) * 100);
+  document.getElementById('s-correct').textContent = correct;
+  document.getElementById('s-wrong').textContent = wrong;
+  document.getElementById('s-skipped').textContent = skipped;
+  document.getElementById('pct-text').textContent = pct + '%';
+  document.getElementById('score-sub').textContent = `You answered ${correct} out of ${total} questions correctly.`;
+  const circ = 2 * Math.PI * 68;
+  const fill = document.getElementById('ring-fill');
+  fill.style.strokeDasharray = circ;
+  fill.style.strokeDashoffset = circ;
+  fill.style.stroke = pct >= 80 ? '#38d9a9' : pct >= 65 ? '#7c6af7' : pct >= 50 ? '#f5a623' : '#f06060';
+  setTimeout(() => fill.style.strokeDashoffset = circ - (pct / 100) * circ, 100);
+  const badge = document.getElementById('grade-badge'), hl = document.getElementById('score-headline');
+  if (pct >= 90)      { badge.textContent='A+'; badge.className='grade-badge grade-A'; hl.textContent='Outstanding! 🎉'; }
+  else if (pct >= 80) { badge.textContent='A';  badge.className='grade-badge grade-A'; hl.textContent='Excellent Work! 🌟'; }
+  else if (pct >= 70) { badge.textContent='B';  badge.className='grade-badge grade-B'; hl.textContent='Good Job! 👍'; }
+  else if (pct >= 60) { badge.textContent='C';  badge.className='grade-badge grade-C'; hl.textContent='Keep Practising 📚'; }
+  else                { badge.textContent='D';  badge.className='grade-badge grade-D'; hl.textContent='Review the Slides 🔄'; }
+  document.getElementById('score-screen').classList.add('active');
+}
+
+function restartQuiz() {
+  document.getElementById('score-screen').classList.remove('active');
+  startQuiz();
+}
+</script>
+</body>
+</html>
